@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+   <androidx.constraintlayout.widget.ConstraintLayout
+       android:layout_width="match_parent"
+       android:layout_height="match_parent">
+       <TextView
+           android:id="@+id/tv_notification"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_marginTop="96dp"
+           android:padding="10dp"
+           android:textSize="20sp"
+           app:layout_constraintEnd_toEndOf="parent"
+           app:layout_constraintHorizontal_bias="0.475"
+           app:layout_constraintStart_toStartOf="parent"
+           app:layout_constraintTop_toTopOf="parent" />
+
+       <Button
+           android:id="@+id/btn_get_data_form_nasa"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:layout_marginTop="8dp"
+           android:text="Get data from Nasa"
+           app:layout_constraintEnd_toEndOf="parent"
+           app:layout_constraintHorizontal_bias="0.493"
+           app:layout_constraintStart_toStartOf="parent"
+           app:layout_constraintTop_toBottomOf="@+id/tv_notification" />
+
+       <Button
+           android:id="@+id/btn_push_data"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:layout_marginTop="8dp"
+           android:text="Push data to my server"
+           app:layout_constraintEnd_toEndOf="parent"
+           app:layout_constraintHorizontal_bias="0.497"
+           app:layout_constraintStart_toStartOf="parent"
+           app:layout_constraintTop_toBottomOf="@+id/btn_get_data_form_nasa" />
+
+       <Button
+           android:id="@+id/btn_get_data_form_my_server"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:layout_marginTop="8dp"
+           android:text="Get data từ server"
+           app:layout_constraintEnd_toEndOf="parent"
+           app:layout_constraintHorizontal_bias="0.497"
+           app:layout_constraintStart_toStartOf="parent"
+           app:layout_constraintTop_toBottomOf="@+id/btn_push_data" />
+
+       <Spinner
+           android:id="@+id/spn_year"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_marginTop="64dp"
+           app:layout_constraintStart_toStartOf="parent"
+           app:layout_constraintTop_toTopOf="parent" />
+
+       <Spinner
+           android:id="@+id/spn_month"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           app:layout_constraintBottom_toBottomOf="@+id/spn_year"
+           app:layout_constraintEnd_toStartOf="@+id/spn_date"
+           app:layout_constraintStart_toEndOf="@+id/spn_year"
+           app:layout_constraintTop_toTopOf="@+id/spn_year" />
+
+       <Spinner
+           android:id="@+id/spn_date"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           app:layout_constraintBottom_toBottomOf="@+id/spn_month"
+           app:layout_constraintEnd_toEndOf="parent"
+           app:layout_constraintTop_toTopOf="@+id/spn_month" />
+
+       <androidx.cardview.widget.CardView
+           android:id="@+id/layout_show_data"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:layout_margin="20dp"
+           app:cardCornerRadius="20dp"
+           app:layout_constraintBottom_toBottomOf="parent"
+           app:layout_constraintEnd_toEndOf="parent"
+           app:layout_constraintStart_toStartOf="parent"
+           app:layout_constraintTop_toBottomOf="@+id/btn_get_data_form_my_server">
+
+           <LinearLayout
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:orientation="vertical"
+               android:padding="20dp">
+
+               <TextView
+                   android:id="@+id/tv_title"
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:text="title"
+                   android:textSize="25sp"
+                   android:textStyle="bold" />
+
+               <ImageView
+                   android:id="@+id/img_hd"
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content" />
+
+               <TextView
+                   android:id="@+id/tv_date"
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:gravity="end"
+                   android:text="date" />
+
+               <TextView
+                   android:id="@+id/tv_explanation"
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:text="explanation" />
+
+           </LinearLayout>
+
+       </androidx.cardview.widget.CardView>
+   </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</ScrollView>

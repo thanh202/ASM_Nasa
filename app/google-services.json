@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "552435754323",
+    "project_id": "asm-nasa",
+    "storage_bucket": "asm-nasa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:552435754323:android:154aacb91b15afdeb5eda6",
+        "android_client_info": {
+          "package_name": "com.example.assignment"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "552435754323-r5rhvoajgof25dkt52cmlt1uc7at2op3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.assignment",
+            "certificate_hash": "823fd7033281b88d2c1b852c1257f25c4d61d79e"
+          }
+        },
+        {
+          "client_id": "552435754323-6r0joe0t8jqrmt8m8hccgfm48g7mgj5f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCaC9z8i1u51e0bSn0SeMG7q7MEBbHi6oI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "552435754323-6r0joe0t8jqrmt8m8hccgfm48g7mgj5f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
