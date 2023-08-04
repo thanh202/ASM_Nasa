@@ -20,11 +20,11 @@ public class MainActivity2 extends AppCompatActivity {
         binding = ActivityMain2Binding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        //Handle loginBtn lick, start login screen
+        //Handle loginBtn click, bat dau man hinh dang nhap
         binding.loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                startActivity(new Intent(MainActivity2.this,LoginActivity.class));
             }
         });
 
@@ -32,7 +32,7 @@ public class MainActivity2 extends AppCompatActivity {
         binding.skipBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                startActivity(new Intent(MainActivity2.this,MainActivity.class));
             }
         });
     }

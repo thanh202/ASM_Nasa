@@ -20,6 +20,8 @@ import com.example.assignment.api.ApiNasa;
 import com.example.assignment.api.ApiResponeNasa;
 import com.example.assignment.databinding.ActivityMainBinding;
 import com.example.assignment.models.HackNasa;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -44,6 +46,9 @@ public class MainActivity extends AppCompatActivity {
     String base64UrlHd;
     String base64url;
 
+    private FirebaseAuth firebaseAuth;
+
+
     private String dateSelected, daySelected, monthSelected, yearSelected;
 
     @Override
@@ -55,6 +60,34 @@ public class MainActivity extends AppCompatActivity {
         hackNasa = new HackNasa();
 
         initViews();
+        //init firebase auth
+        firebaseAuth =FirebaseAuth.getInstance();
+        checkUser();
+
+        //handle click, logout
+        binding.logoutBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                firebaseAuth.signOut();
+                checkUser();
+            }
+        });
+
+    }
+
+    private void checkUser() {
+        //get current user
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+        if (firebaseUser==null){
+            startActivity(new Intent(this,MainActivity2.class));
+            finish();
+        }
+        else {
+            //logged in, get user info
+            String email = firebaseUser.getEmail();
+            //set in textview of toolbar
+            binding.subtitleTv.setText(email);
+        }
     }
 
     private void initViews() {

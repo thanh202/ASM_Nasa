@@ -13,7 +13,7 @@
         android:layout_height="200dp"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="40dp"
-        android:src="@drawable/nasa"/>
+        android:src="@drawable/nasa_logo_icon"/>
 
     <TextView
         android:layout_width="wrap_content"
