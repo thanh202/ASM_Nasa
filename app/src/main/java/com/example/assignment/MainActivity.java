@@ -3,15 +3,22 @@ package com.example.assignment;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Dialog;
 import android.content.Intent;
 
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 
 import com.bumptech.glide.Glide;
@@ -23,11 +30,11 @@ import com.example.assignment.models.HackNasa;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Calendar;
@@ -38,16 +45,25 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
+    private TextView tvServerName, tvServerPort, tvStatus,tvReceivedMessage;
+    private Button bntSend;
+    private String serverIP = "192.168.0.107"; // ĐỊA CHỈ IP MÁY
+    private int serverPort = 1234; // PORT
+    private ServerThread serverThread;
+    private EditText edMessage;
+    // Sử dụng Handler để làm việc với giao diện trong Thread
+    private Handler handler = new Handler(Looper.getMainLooper());
+    private FirebaseAuth auth;
 
+    TextView textView;
+    private Button logout;
+    FirebaseUser user;
     private ActivityMainBinding binding;
     private HackNasa hackNasa;
-    private static final String API_KEY = "RueVK9M3tKUAymycg5BYB1DM3Wea8KWBSlmjde6x";
+    private static final String API_KEY = "SkHr3gLrVR8WpMuEWoLxazM6uFpoHHvddjf2nx6w";
     private ApiNasa apiNasa;
     String base64UrlHd;
     String base64url;
-
-    private FirebaseAuth firebaseAuth;
-
 
     private String dateSelected, daySelected, monthSelected, yearSelected;
 
@@ -56,38 +72,47 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        auth=FirebaseAuth.getInstance();
+        logout=findViewById(R.id.logout);
+        textView=findViewById(R.id.userdetail);
+        user=auth.getCurrentUser();
+        tvServerName = findViewById(R.id.tvsevername);
+        tvServerPort = findViewById(R.id.tvServerpory);
+        tvStatus = findViewById(R.id.tvstatus);
+        tvReceivedMessage = findViewById(R.id.tv_nhantinnhan);
+
+
+        serverThread = new ServerThread();
+        Toast.makeText(this, "SERVER ĐÃ CHẠY", Toast.LENGTH_SHORT).show();
+        serverThread.startServer();
+
+
+
+        // Hiển thị địa chỉ IP và cổng của Server lên giao diện
+
+        tvServerName.setText(serverIP);
+        tvServerPort.setText(String.valueOf(serverPort));
+
+        if(user==null){
+            Intent intent=new Intent(MainActivity.this,LoginActivity.class);
+            startActivity(intent);
+            finish();
+        }else {
+            textView.setText(user.getEmail());
+        }
+        logout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FirebaseAuth.getInstance().signOut();
+                Intent intent=new Intent(MainActivity.this,LoginActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
 
         hackNasa = new HackNasa();
 
         initViews();
-        //init firebase auth
-        firebaseAuth =FirebaseAuth.getInstance();
-        checkUser();
-
-        //handle click, logout
-        binding.logoutBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                firebaseAuth.signOut();
-                checkUser();
-            }
-        });
-
-    }
-
-    private void checkUser() {
-        //get current user
-        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-        if (firebaseUser==null){
-            startActivity(new Intent(this,MainActivity2.class));
-            finish();
-        }
-        else {
-            //logged in, get user info
-            String email = firebaseUser.getEmail();
-            //set in textview of toolbar
-            binding.subtitleTv.setText(email);
-        }
     }
 
     private void initViews() {
@@ -175,8 +200,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-             base64UrlHd = convertUrlToBase64(hackNasa.getHdurl());
-             base64url = convertUrlToBase64(hackNasa.getUrl());
+            base64UrlHd = convertUrlToBase64(hackNasa.getHdurl());
+            base64url = convertUrlToBase64(hackNasa.getUrl());
         }
 
         hackNasa.setHdurl(base64UrlHd);
@@ -225,6 +250,138 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+    class ServerThread extends Thread {
+        private boolean serverRunning;
+        private ServerSocket serverSocket;
+        // Phương thức start
+        public void startServer() {
+            serverRunning = true;
+            start();
+        }
+        public void stopServer() {
+            serverRunning = false;
+            if (serverSocket != null) {
+                try {
+                    serverSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    tvStatus.setText("Server stopped");
+                }
+            });
+        }
+        public void sendMessageToClients(final String message) {
+            if (serverSocket != null) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (ClientHandler client : clientsList) {
+                            client.sendMessageToClient(message);
+                        }
+                    }
+                }).start();
+            }
+        }
+        private ArrayList<ClientHandler> clientsList = new ArrayList<ClientHandler>();
+
+        @Override
+        public void run() {
+            try {
+                // Tạo Socket Server
+                serverSocket = new ServerSocket(serverPort);
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        tvStatus.setText("Waiting for Clients");
+                    }
+                });
+
+                while (serverRunning) {
+                    // Chấp nhận các kết nối từ Client
+                    java.net.Socket socket = serverSocket.accept();
+                    // Xử lý Client kết nối mới trong một luồng riêng biệt
+
+                    ServerThread.ClientHandler client = new ServerThread.ClientHandler(socket);
+                    client.start();
+                    clientsList.add(client);
+                    // Cập nhật giao diện khi có Client kết nối thành công
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            tvStatus.setText("Connected to: " + socket.getInetAddress() + " : " + socket.getLocalPort());
+                        }
+                    });
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        class ClientHandler extends Thread {
+            private java.net.Socket clientSocket;
+            private BufferedReader br_input;
+            private PrintWriter output_Client;
+
+            public ClientHandler(java.net.Socket socket) {
+                clientSocket = socket;
+                try {
+                    // Lấy luồng đầu vào và luồng đầu ra của Client
+                    br_input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                    output_Client = new PrintWriter(clientSocket.getOutputStream(), true);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            // Phương thức gửi tin nhắn đến Client
+            public void sendMessageToClient(String message) {
+                output_Client.println(message);
+            }
+            @Override
+            public void run() {
+                try {
+                    // Hiển thị tin nhắn từ Client lên giao diện
+                    String messageFromClient;
+                    while ((messageFromClient = br_input.readLine()) != null) {
+                        // Hiển thị tin nhắn từ Client lên giao diện
+                        final String finalMessage = messageFromClient;
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                // Set tin nhắn lên texview giao diện
+                                tvReceivedMessage.setText("Tin nhắn từ client: " + finalMessage);
+                                // thông báo co tin nhắn mới
+                                final Dialog dialog = new Dialog(MainActivity.this);
+                                // set layout dialog
+                                dialog.setContentView(R.layout.dialogthongbao);
+                                TextView tvmes=dialog.findViewById(R.id.tvmess);
+                                // set tin nhắn lên texviewở dialog
+                                tvmes.setText(""+finalMessage);
+                                dialog.setCancelable(true);
+
+                                // show dialog
+                                dialog.show();
+
+                                // set dialog sau 4s thì ẩn
+                                new Handler().postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (dialog.isShowing()) {
+                                            dialog.dismiss();
+                                        }
+                                    }
+                                }, 4000);
+                            }
+                        });
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
 }
-

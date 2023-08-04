@@ -34,6 +34,7 @@
         android:textColor="@color/white"
         android:background="@drawable/shape_button01"
         />
+
     <Button
         android:id="@+id/skipBtn"
         android:layout_width="match_parent"
